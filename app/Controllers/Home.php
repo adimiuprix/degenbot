@@ -10,9 +10,6 @@ use App\Models\Email;
 class Home extends BaseController
 {
     public function telegram(){
-        $member = new Members();
-        $email  = new Email();
-
         $telegram = new Api('7138005309:AAEhUAG0nMgDEWMrCqT5dBl82PT9A6eUFls');
         // Ambil data dari input Telegram
         $data = file_get_contents('php://input');
