@@ -3,14 +3,22 @@
 namespace App\Controllers;
 use Telegram\Bot\Api;
 use Telegram\Bot\Keyboard\Keyboard;
+use Telegram\Bot\Commands\Command;
 
 use App\Models\Members;
 use App\Models\Email;
 
 class Home extends BaseController
 {
+    public function index(){
+        $telegram = new Api('7154738294:AAEHz94hn2LLbic7FhJBhD0WghdBWHUPNBs');
+        $response = $telegram->addCommand(\Telegram\Bot\Commands\HelpCommand::class);
+        $update = $telegram->commandsHandler(true);
+        dd($update);
+    }
+
     public function telegram(){
-        $telegram = new Api('7138005309:AAEhUAG0nMgDEWMrCqT5dBl82PT9A6eUFls');
+        $telegram = new Api('7154738294:AAEHz94hn2LLbic7FhJBhD0WghdBWHUPNBs');
         // Ambil data dari input Telegram
         $data = file_get_contents('php://input');
 
@@ -57,6 +65,14 @@ class Home extends BaseController
                         ]);
                     }
                     break;
+
+                case 'Next':
+                    $this->task($telegram, $chatID, $username);
+                    break;
+
+                // case 'Menu':
+                //     $this->start($telegram, $chatID, $username);
+                //     break;
             }
         }
     }
@@ -138,7 +154,8 @@ class Home extends BaseController
                 ->setResizeKeyboard(true)
                 ->setOneTimeKeyboard(true)
                 ->row([
-                    Keyboard::button('Set Email'),
+                    Keyboard::button('Next'),
+                    Keyboard::button('Menu'),
                 ]);
 
             $telegram->sendMessage([
@@ -161,42 +178,72 @@ class Home extends BaseController
 
     public function registResult($telegram, $chatID, $username, $message)
     {
-        $email = new Email();
-        // Check if the user already exists in the database
-        $existingMember = $email->where('username', $username)->first();
+        $member = new Members();
 
-        if (!$existingMember) {
-            // User does not exist, insert new record
-            $dataPost = [
+        $emailMember = $member->where('username', $username)->first();
+
+        $memberDetail = $member->where('chat_id', $chatID)->get()->getRow();
+        $id = $memberDetail->id;
+
+        $task = Keyboard::make()
+            ->setResizeKeyboard(true)
+            ->setOneTimeKeyboard(true)
+            ->row([
+                Keyboard::button('Follow twitter'),
+            ]);
+
+        if (!$emailMember) {
+
+            $member->update($id, [
                 'username' => $username,
                 'chat_id' => $chatID,
                 'email' => $message,
-            ];
-            $email->insert($dataPost);
+            ]);
+
 
             $telegram->sendMessage([
                 'chat_id' => $chatID,
                 'text' => "Selamat $username, anda telah berhasil terdaftar di whitelist kami, Selanjutnya selesaikan task yang kami berikan untuk mendapat reward.",
+                'reply_markup' => $task
             ]);
         }else {
-            // User already exists, send a message indicating that
-            $emailSubmit = Keyboard::make()
-                ->setResizeKeyboard(true)
-                ->setOneTimeKeyboard(true)
-                ->row([
-                    Keyboard::button('Set Email'),
-                ]);
+
+            $member->update($id, [
+                'username' => $username,
+                'chat_id' => $chatID,
+                'email' => $message,
+            ]);
 
             $telegram->sendMessage([
                 'chat_id' => $chatID,
-                'text' => "You are already registered.",
-                'reply_markup' => $emailSubmit
+                'text' => "Selamat $username, anda telah berhasil terdaftar di whitelist kami, Selanjutnya selesaikan task yang kami berikan untuk mendapat reward.",
+                'reply_markup' => $task
             ]);
         }
 
         return true;
     }
 
-    // https://api.telegram.org/bot7138005309:AAEhUAG0nMgDEWMrCqT5dBl82PT9A6eUFls/setWebhook?url=https://ostrich-golden-monkfish.ngrok-free.app/trims
+    public function task($telegram, $chatID, $username){
+        $command = new Command();
+
+        $task = Keyboard::make()
+            ->setResizeKeyboard(true)
+            ->setOneTimeKeyboard(true)
+            ->row([
+                Keyboard::button('Follow twitter'),
+                Keyboard::button('Like & retweet pinned post'),
+                Keyboard::button('Follow twitter'),
+            ]);
+
+        $telegram->sendMessage([
+            'chat_id' => $chatID,
+            'text' => "your task",
+            'reply_markup' => $task
+        ]);
+        return true;
+    }
+
+    // https://api.telegram.org/bot7159584247:AAGQhZh_1y8tvyUJcjLdKrklUThsNNtTAvc/setWebhook?url=https://ostrich-golden-monkfish.ngrok-free.app/trims
     // // Tentukan nama file untuk menyimpan data
 }

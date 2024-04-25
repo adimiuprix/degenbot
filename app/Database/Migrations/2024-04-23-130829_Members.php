@@ -28,7 +28,12 @@ class Members extends Migration
             'balance' => [
                 'type'          => 'INT',
                 'default' => 0,
-            ]
+            ],
+            'email' => [
+                'type'          => 'VARCHAR',
+                'constraint'    => 255,
+                'null' => true,
+            ],
         ]);
         $this->forge->addKey('id', true);
         $this->forge->createTable('members');
