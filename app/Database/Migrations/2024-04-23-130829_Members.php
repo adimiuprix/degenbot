@@ -25,6 +25,10 @@ class Members extends Migration
                 'constraint'    => 255,
                 'null' => true,
             ],
+            'balance' => [
+                'type'          => 'INT',
+                'default' => 0,
+            ]
         ]);
         $this->forge->addKey('id', true);
         $this->forge->createTable('members');

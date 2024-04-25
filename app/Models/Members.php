@@ -12,6 +12,6 @@ class Members extends Model
     protected $returnType       = 'array';
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
-    protected $allowedFields    = ['username', 'chat_id', 'captcha_answer'];
+    protected $allowedFields    = ['username', 'chat_id', 'balance', 'email'];
 
 }

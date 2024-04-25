@@ -7,3 +7,4 @@ use CodeIgniter\Router\RouteCollection;
  */
 $routes->get('/', 'Home::index');
 $routes->post('trims', 'Home::telegram');
+$routes->get('webhook', 'Home::setWebHook');
