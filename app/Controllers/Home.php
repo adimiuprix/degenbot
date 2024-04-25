@@ -3,7 +3,8 @@
 namespace App\Controllers;
 use Telegram\Bot\Api;
 use Telegram\Bot\Keyboard\Keyboard;
-use Telegram\Bot\Commands\Command;
+
+use App\Controllers\Start;
 
 use App\Models\Members;
 use App\Models\Email;
@@ -18,6 +19,8 @@ class Home extends BaseController
     }
 
     public function telegram(){
+        $begin = new Start();
+
         $telegram = new Api('7154738294:AAEHz94hn2LLbic7FhJBhD0WghdBWHUPNBs');
         // Ambil data dari input Telegram
         $data = file_get_contents('php://input');
@@ -37,11 +40,11 @@ class Home extends BaseController
 
             switch ($message) {
                 case '/start':
-                    $this->start($telegram, $chatID, $username);
+                    $begin->start($telegram, $chatID, $username);
                     break;
 
                 case 'Join Airdrop':
-                    $this->join($telegram, $chatID);
+                    $begin->join($telegram, $chatID);
                     break;
 
                 case 'Registration':
@@ -67,7 +70,7 @@ class Home extends BaseController
                     break;
 
                 case 'Next':
-                    $this->task($telegram, $chatID, $username);
+                    $this->task($telegram, $chatID);
                     break;
 
                 // case 'Menu':
@@ -77,57 +80,6 @@ class Home extends BaseController
         }
     }
 
-    public function start($telegram, $chatID, $username)
-    {
-        $key1 = Keyboard::make()
-            ->setResizeKeyboard(true)
-            ->setOneTimeKeyboard(true)
-            ->row([
-                Keyboard::button('Join Airdrop'),
-                Keyboard::button('My Balance'),
-                Keyboard::button('Information'),
-            ]);
-
-        $telegram->sendMessage([
-            'chat_id' => $chatID,
-            'text' => "🤝 Welcome $username! I will guide you away from our airdrop.
-
-            1️⃣ First, click the Join Airdrop & Register button to perform the airdrop tasks and submit your information from the Register button.
-
-            2️⃣ You can check your balance and get your referral link by using the My Balance button. 
-
-            3️⃣ Please make sure that you have read the Information section.
-
-            🗞 Note: You can change your profile details by typing /changeprofile",
-            'reply_markup' => $key1
-        ]);
-
-        return true;
-    }
-
-    public function join($telegram, $chatID)
-    {
-        $key2 = Keyboard::make()
-            ->setResizeKeyboard(true)
-            ->setOneTimeKeyboard(true)
-            ->row([
-                Keyboard::button('Registration'),
-            ]);
-
-        $telegram->sendMessage([
-            'chat_id' => $chatID,
-            'text' => "💻 Please perform the @airdrop tasks to earn up to 300 Yoda.
-
-                💠 Solve the portal captcha to join BabyYoda Telegram group.
-
-                💠 Follow BabyYoda on Twitter (https://twitter.com/BabyYodaonton) and retweet the pinned post by tagging 3 of your friends.
-
-                💠 Join our promoter channel. (https://t.me/Airdrop) (Optional » 30 Yoda)",
-            'reply_markup' => $key2
-        ]);
-
-        return true;
-    }
 
     public function registration($telegram, $chatID, $username)
     {
@@ -224,21 +176,18 @@ class Home extends BaseController
         return true;
     }
 
-    public function task($telegram, $chatID, $username){
-        $command = new Command();
+    public function task($telegram, $chatID){
 
         $task = Keyboard::make()
             ->setResizeKeyboard(true)
             ->setOneTimeKeyboard(true)
             ->row([
-                Keyboard::button('Follow twitter'),
-                Keyboard::button('Like & retweet pinned post'),
-                Keyboard::button('Follow twitter'),
+                Keyboard::button('Submit Answer'),
             ]);
 
         $telegram->sendMessage([
             'chat_id' => $chatID,
-            'text' => "your task",
+            'text' => "your task: Beri link yang harus di selesaikan.",
             'reply_markup' => $task
         ]);
         return true;
