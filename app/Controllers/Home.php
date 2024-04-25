@@ -5,11 +5,14 @@ use Telegram\Bot\Api;
 use Telegram\Bot\Keyboard\Keyboard;
 
 use App\Models\Members;
+use App\Models\Email;
 
 class Home extends BaseController
 {
     public function telegram(){
         $member = new Members();
+        $email  = new Email();
+
         $telegram = new Api('7138005309:AAEhUAG0nMgDEWMrCqT5dBl82PT9A6eUFls');
         // Ambil data dari input Telegram
         $data = file_get_contents('php://input');
@@ -49,38 +52,11 @@ class Home extends BaseController
 
                 case $this->is_valid_email($message):
                     if ($this->is_valid_email($message)){
-
-                        $dataPost = [
-                            'email' => $message,
-                        ];
-                        $member->insert($dataPost);
-
-                        $this->address($telegram, $chatID, $username);
+                        $this->registResult($telegram, $chatID, $username, $message);
                     }else{
                         $telegram->sendMessage([
                             'chat_id' => $chatID,
                             'text' => "Bukan emmail",
-                        ]);
-                    }
-                    break;
-
-                case $this->is_valid_ethereum($message):
-                    if ($this->is_valid_ethereum($message)){
-
-                        $dataPost = [
-                            'address' => $message,
-                        ];
-                        $member->insert($dataPost);
-
-                        $telegram->sendMessage([
-                            'chat_id' => $chatID,
-                            'text' => "Berhasil setel alamat",
-                        ]);
-
-                    }else{
-                        $telegram->sendMessage([
-                            'chat_id' => $chatID,
-                            'text' => "Bukan alamat",
                         ]);
                     }
                     break;
@@ -186,35 +162,38 @@ class Home extends BaseController
         }
     }
 
-    function is_valid_ethereum($message){
-        // Ethereum address regex pattern
-        $pattern = '/^0x[a-fA-F0-9]{40}$/';
-
-        // Check if the address matches the regex pattern
-        if (preg_match($pattern, $message)) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    public function address($telegram, $chatID, $username)
+    public function registResult($telegram, $chatID, $username, $message)
     {
-        $member = new Members();
-
+        $email = new Email();
         // Check if the user already exists in the database
-        $existingMember = $member->where('username', $username)->first();
+        $existingMember = $email->where('username', $username)->first();
 
-        if ($existingMember) {
-            // User exists, proceed with address collection
+        if (!$existingMember) {
+            // User does not exist, insert new record
+            $dataPost = [
+                'username' => $username,
+                'chat_id' => $chatID,
+                'email' => $message,
+            ];
+            $email->insert($dataPost);
+
             $telegram->sendMessage([
                 'chat_id' => $chatID,
-                'text' => "📝 Please type your wallet address.",
+                'text' => "Selamat $username, anda telah berhasil terdaftar di whitelist kami, Selanjutnya selesaikan task yang kami berikan untuk mendapat reward.",
             ]);
-        } else {
+        }else {
+            // User already exists, send a message indicating that
+            $emailSubmit = Keyboard::make()
+                ->setResizeKeyboard(true)
+                ->setOneTimeKeyboard(true)
+                ->row([
+                    Keyboard::button('Set Email'),
+                ]);
+
             $telegram->sendMessage([
                 'chat_id' => $chatID,
-                'text' => "Anda harus mendaftar terlebih dahulu sebelum menambahkan alamat dompet. Silakan gunakan perintah '/registration' untuk mendaftar.",
+                'text' => "You are already registered.",
+                'reply_markup' => $emailSubmit
             ]);
         }
 
