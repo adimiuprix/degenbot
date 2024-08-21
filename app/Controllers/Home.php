@@ -200,7 +200,12 @@ class Home extends BaseController
     public function balance($chatID)
     {
         $data = $this->member->where('chat_id', $chatID)->first();
-        $bal = $data['balance'];
+
+        if ($data && isset($data['balance'])) {
+            $bal = $data['balance'];
+        } else {
+            $bal = 'N/A';
+        }
 
         $this->telegram->sendMessage([
             'chat_id' => $chatID,
