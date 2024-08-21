@@ -3,6 +3,7 @@
 namespace App\Controllers;
 use Telegram\Bot\Keyboard\Keyboard;
 use App\Controllers\Start;
+use App\Controllers\Registration;
 use App\Models\Members;
 
 class Home extends BaseController
@@ -10,12 +11,14 @@ class Home extends BaseController
     protected $start;
     protected $member;
     protected $fetchObject;
+    protected $regist;
 
     public function __construct()
     {
         $this->fetchObject = file_get_contents('php://input');
         $this->member = new Members();
         $this->start = new Start();
+        $this->regist = new Registration();
     }
 
     public function index(){
@@ -40,7 +43,7 @@ class Home extends BaseController
         }
 
         if($text == 'Registration'){
-            $this->registration($this->telegram, $chatID, $username);
+            $this->regist->registration($this->telegram, $chatID, $username);
         }
 
         if($text == 'Set Email'){
@@ -94,13 +97,13 @@ class Home extends BaseController
         if($text == 'Information')
         {
             $menu = Keyboard::make()
-            ->setResizeKeyboard(true)
-            ->setOneTimeKeyboard(true)
-            ->row([
-                Keyboard::button('Join Airdrop'),
-                Keyboard::button('My Balance'),
-                Keyboard::button('Information'),
-            ]);
+                ->setResizeKeyboard(true)
+                ->setOneTimeKeyboard(true)
+                ->row([
+                    Keyboard::button('Join Airdrop'),
+                    Keyboard::button('My Balance'),
+                    Keyboard::button('Information'),
+                ]);
 
             $this->telegram->sendMessage([
                 'chat_id' => $chatID,
@@ -119,43 +122,6 @@ class Home extends BaseController
                 . "⏳ Distribution date: June 30, 2024.\n",
                 'reply_markup' => $menu,
                 'parse_mode' => 'Markdown',
-            ]);
-        }
-    }
-
-    public function registration($telegram, $chatID, $username)
-    {
-        $member = new Members();
-
-        // Check if the user already exists in the database
-        $existingMember = $member->where('username', $username)->first();
-
-        if (!$existingMember) {
-            // User does not exist, insert new record
-            $dataPost = [
-                'username' => $username,
-                'chat_id' => $chatID,
-            ];
-            $member->insert($dataPost);
-
-            $telegram->sendMessage([
-                'chat_id' => $chatID,
-                'text' => "📝 Please type your email.",
-            ]);
-        } else {
-            // User already exists, send a message indicating that
-            $emailSubmit = Keyboard::make()
-                ->setResizeKeyboard(true)
-                ->setOneTimeKeyboard(true)
-                ->row([
-                    Keyboard::button('Next'),
-                    Keyboard::button('Menu'),
-                ]);
-
-            $telegram->sendMessage([
-                'chat_id' => $chatID,
-                'text' => "You are already registered.",
-                'reply_markup' => $emailSubmit
             ]);
         }
     }
