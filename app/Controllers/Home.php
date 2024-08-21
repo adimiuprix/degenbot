@@ -1,85 +1,123 @@
 <?php
 
 namespace App\Controllers;
-use Telegram\Bot\Api;
 use Telegram\Bot\Keyboard\Keyboard;
-
 use App\Controllers\Start;
-
 use App\Models\Members;
-use App\Models\Email;
 
 class Home extends BaseController
 {
+    protected $fetchObject;
+    protected $member;
+
+    public function __construct()
+    {
+        $this->fetchObject = file_get_contents('php://input');
+        $this->member = new Members();
+    }
+
     public function index(){
-        $telegram = new Api('7045834575:AAGsXKGV21C0XnhzQ6mxsrjlGcrpO6i_Evw');
-        $response = $telegram->addCommand(\Telegram\Bot\Commands\HelpCommand::class);
-        $update = $telegram->commandsHandler(true);
-        dd($update);
+        $me = $this->telegram->getMe();
+        dd($me);
     }
 
     public function telegram(){
         $begin = new Start();
 
-        $telegram = new Api('7045834575:AAGsXKGV21C0XnhzQ6mxsrjlGcrpO6i_Evw');
-        // Ambil data dari input Telegram
-        $data = file_get_contents('php://input');
+        $decoded_data = json_decode($this->fetchObject, true);
+        $text = $decoded_data['message']['text'];
+        $username = $decoded_data['message']['from']['username'];
+        $chatID = $decoded_data['message']['from']['id'];
 
-        // Decode data JSON ke dalam bentuk array
-        $decoded_data = json_decode($data, true);
-        $file = WRITEPATH . 'data.json';
+        file_put_contents(WRITEPATH . 'data.json', json_encode(json_decode($this->fetchObject, true), JSON_PRETTY_PRINT));
 
-        // Encode array ke dalam format JSON
-        $json_encoded = json_encode($decoded_data, JSON_PRETTY_PRINT);
-        file_put_contents($file, $json_encoded);
+        if($text == '/start'){
+            $begin->start($this->telegram, $chatID, $username);
+        }
 
-        if(isset($decoded_data)){
-            $username = $decoded_data['message']['from']['username'];
-            $chatID = $decoded_data['message']['from']['id'];
-            $message = $decoded_data['message']['text'];
+        if($text == 'Join Airdrop'){
+            $begin->join($this->telegram, $chatID);
+        }
 
-            switch ($message) {
-                case '/start':
-                    $begin->start($telegram, $chatID, $username);
-                    break;
+        if($text == 'Registration'){
+            $this->registration($this->telegram, $chatID, $username);
+        }
 
-                case 'Join Airdrop':
-                    $begin->join($telegram, $chatID);
-                    break;
+        if($text == 'Set Email'){
+            $this->telegram->sendMessage([
+                'chat_id' => $chatID,
+                'text' => "Masukkan email anda",
+            ]);
+        }
 
-                case 'Registration':
-                    $this->registration($telegram, $chatID, $username);
-                    break;
+        if($text == 'Next'){
+            $this->task($this->telegram, $chatID);
+        }
 
-                case 'Set Email':
-                    $telegram->sendMessage([
-                        'chat_id' => $chatID,
-                        'text' => "Masukkan email anda",
-                    ]);
-                    break;
+        if($text == 'Menu'){
+            $this->menus($chatID);
+        }
 
-                case $this->is_valid_email($message):
-                    if ($this->is_valid_email($message)){
-                        $this->registResult($telegram, $chatID, $username, $message);
-                    }else{
-                        $telegram->sendMessage([
-                            'chat_id' => $chatID,
-                            'text' => "Bukan emmail",
-                        ]);
-                    }
-                    break;
+        if($text == 'Submit Answer'){
+            $this->telegram->sendMessage([
+                'chat_id' => $chatID,
+                'text' => "Belum di buat halamannya",
+            ]);
+        }
 
-                case 'Next':
-                    $this->task($telegram, $chatID);
-                    break;
+        if($text == 'My Balance'){
+            $this->balance($chatID);
+        }
 
-                // case 'Menu':
-                //     $this->start($telegram, $chatID, $username);
-                //     break;
-            }
+        if($text == 'Main Menu')
+        {
+            $menu = Keyboard::make()
+            ->setResizeKeyboard(true)
+            ->setOneTimeKeyboard(true)
+            ->row([
+                Keyboard::button('Join Airdrop'),
+                Keyboard::button('My Balance'),
+                Keyboard::button('Information'),
+            ]);
+
+            $this->telegram->sendMessage([
+                'chat_id' => $chatID,
+                'text' => "🖱 Click one of the buttons below",
+                'reply_markup' => $menu
+            ]);
+        }
+
+        if($text == 'Information')
+        {
+            $menu = Keyboard::make()
+            ->setResizeKeyboard(true)
+            ->setOneTimeKeyboard(true)
+            ->row([
+                Keyboard::button('Join Airdrop'),
+                Keyboard::button('My Balance'),
+                Keyboard::button('Information'),
+            ]);
+
+            $this->telegram->sendMessage([
+                'chat_id' => $chatID,
+                'text' => "♻️ You can change your registration details by typing /changeprofile\n"
+                . "🔐 Subscribers who unfollow the mandatory social media tasks will not be eligible.\n"
+                . "👨‍👩‍👧 $3000 worth of ACE for top 200 referrers.\n"
+                . "🔄 Audit: Cyberscope\n"
+
+                . "🗞 Notes: Airdrop will end on June 25, 2024. Total airdrop pool is $10,000 worth of ACE. 1000 participants will be selected randomly to be rewarded $6 worth of ACE each. Top 200 referrers will be rewarded as follows.\n"
+
+                . "1st place:          $125 worth of ACE\n"
+                . "2nd place:          $75 worth of ACE\n"
+                . "3rd place:          $42 worth of ACE\n"
+                . "4th to 200th place: $14 worth of ACE each.\n"
+
+                . "⏳ Distribution date: June 30, 2024.\n",
+                'reply_markup' => $menu,
+                'parse_mode' => 'Markdown',
+            ]);
         }
     }
-
 
     public function registration($telegram, $chatID, $username)
     {
@@ -118,67 +156,41 @@ class Home extends BaseController
         }
     }
 
-    function is_valid_email($message)
+    function is_valid_email($chatID, $email)
     {
         // Using PHP's built-in function to check email validity
-        if (filter_var($message, FILTER_VALIDATE_EMAIL)) {
-            return true;
+        if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $memberModel = $this->member->where('chat_id', $chatID)->first();
+
+            $this->member->update($memberModel['id'], [
+                'email' => $email,
+            ]);
+
+            $true_email = Keyboard::make()
+                ->setResizeKeyboard(true)
+                ->setOneTimeKeyboard(true)
+                ->row([
+                    Keyboard::button('Next'),
+                    Keyboard::button('Menu'),
+                ]);
+
+            $this->telegram->sendMessage([
+                'chat_id' => $chatID,
+                'text' => "Email Benar",
+                'reply_markup' => $true_email
+            ]);
+
         } else {
-            return false;
+            $this->telegram->sendMessage([
+                'chat_id' => $chatID,
+                'text' => "Wrong email!...",
+            ]);
         }
     }
 
-    public function registResult($telegram, $chatID, $username, $message)
+    public function task($telegram, $chatID) :void
     {
-        $member = new Members();
-
-        $emailMember = $member->where('username', $username)->first();
-
-        $memberDetail = $member->where('chat_id', $chatID)->get()->getRow();
-        $id = $memberDetail->id;
-
-        $task = Keyboard::make()
-            ->setResizeKeyboard(true)
-            ->setOneTimeKeyboard(true)
-            ->row([
-                Keyboard::button('Follow twitter'),
-            ]);
-
-        if (!$emailMember) {
-
-            $member->update($id, [
-                'username' => $username,
-                'chat_id' => $chatID,
-                'email' => $message,
-            ]);
-
-
-            $telegram->sendMessage([
-                'chat_id' => $chatID,
-                'text' => "Selamat $username, anda telah berhasil terdaftar di whitelist kami, Selanjutnya selesaikan task yang kami berikan untuk mendapat reward.",
-                'reply_markup' => $task
-            ]);
-        }else {
-
-            $member->update($id, [
-                'username' => $username,
-                'chat_id' => $chatID,
-                'email' => $message,
-            ]);
-
-            $telegram->sendMessage([
-                'chat_id' => $chatID,
-                'text' => "Selamat $username, anda telah berhasil terdaftar di whitelist kami, Selanjutnya selesaikan task yang kami berikan untuk mendapat reward.",
-                'reply_markup' => $task
-            ]);
-        }
-
-        return true;
-    }
-
-    public function task($telegram, $chatID){
-
-        $task = Keyboard::make()
+        $submit = Keyboard::make()
             ->setResizeKeyboard(true)
             ->setOneTimeKeyboard(true)
             ->row([
@@ -187,9 +199,47 @@ class Home extends BaseController
 
         $telegram->sendMessage([
             'chat_id' => $chatID,
-            'text' => "your task: Beri link yang harus di selesaikan.",
-            'reply_markup' => $task
+            'text' => "✏️ Mandatory Tasks:\n\n"
+            . "🔹 Join our [channel](https://www.google.com)\n"
+            . "🔹 Visit our website to mine\n"
+            . "🔹 Join our Discord Server\n"
+            . "🔹 Follow our Twitter page\n"
+            . "🔹 Join our Airdrop Partner's Channel\n"
+            . "🔹 Follow our Airdrop Partner's Twitter and Retweet this Airdrop Tweet",
+            'parse_mode' => 'Markdown',
+            'reply_markup' => $submit
         ]);
-        return true;
+    }
+
+    public function menus($chatID){
+        $menu = Keyboard::make()
+        ->setResizeKeyboard(true)
+        ->setOneTimeKeyboard(true)
+        ->row([
+            Keyboard::button('Join Airdrop'),
+            Keyboard::button('My Balance'),
+            Keyboard::button('Information'),
+        ]);
+
+        $this->telegram->sendMessage([
+            'chat_id' => $chatID,
+            'text' => "🖱 Click one of the buttons below",
+            'reply_markup' => $menu
+        ]);
+    }
+
+    public function balance($chatID)
+    {
+        $data = $this->member->where('chat_id', $chatID)->first();
+        $bal = $data['balance'];
+
+        $this->telegram->sendMessage([
+            'chat_id' => $chatID,
+            'text' => "🏆 Reward: $bal worth of ACE\n"
+            . "👨‍👩‍👧 Referral number: 0\n"
+
+            . "referral link: [https://t.me/ApolloCapsAirdropBot?start=1795676886](https://t.me/ApolloCapsAirdropBot?start=1795676886)",
+            'parse_mode' => 'Markdown',
+        ]);
     }
 }

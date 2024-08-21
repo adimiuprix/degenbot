@@ -8,6 +8,8 @@ use CodeIgniter\HTTP\IncomingRequest;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
 use Psr\Log\LoggerInterface;
+use Telegram\Bot\Api;
+
 
 /**
  * Class BaseController
@@ -41,7 +43,8 @@ abstract class BaseController extends Controller
      * Be sure to declare properties for any property fetch you initialized.
      * The creation of dynamic property is deprecated in PHP 8.2.
      */
-    // protected $session;
+    protected $session;
+    protected $telegram;
 
     /**
      * @return void
@@ -53,6 +56,8 @@ abstract class BaseController extends Controller
 
         // Preload any models, libraries, etc, here.
 
-        // E.g.: $this->session = \Config\Services::session();
+        $this->session = \Config\Services::session();
+
+        $this->telegram = new Api('7363563786:AAG1ptSZDKH-apTpJKtENDTtK7EL8_kmn_k');
     }
 }
