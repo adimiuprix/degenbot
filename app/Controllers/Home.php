@@ -12,7 +12,7 @@ use App\Models\Email;
 class Home extends BaseController
 {
     public function index(){
-        $telegram = new Api('7154738294:AAEHz94hn2LLbic7FhJBhD0WghdBWHUPNBs');
+        $telegram = new Api('7045834575:AAGsXKGV21C0XnhzQ6mxsrjlGcrpO6i_Evw');
         $response = $telegram->addCommand(\Telegram\Bot\Commands\HelpCommand::class);
         $update = $telegram->commandsHandler(true);
         dd($update);
@@ -21,7 +21,7 @@ class Home extends BaseController
     public function telegram(){
         $begin = new Start();
 
-        $telegram = new Api('7154738294:AAEHz94hn2LLbic7FhJBhD0WghdBWHUPNBs');
+        $telegram = new Api('7045834575:AAGsXKGV21C0XnhzQ6mxsrjlGcrpO6i_Evw');
         // Ambil data dari input Telegram
         $data = file_get_contents('php://input');
 
@@ -192,7 +192,4 @@ class Home extends BaseController
         ]);
         return true;
     }
-
-    // https://api.telegram.org/bot7159584247:AAGQhZh_1y8tvyUJcjLdKrklUThsNNtTAvc/setWebhook?url=https://ostrich-golden-monkfish.ngrok-free.app/trims
-    // // Tentukan nama file untuk menyimpan data
 }
