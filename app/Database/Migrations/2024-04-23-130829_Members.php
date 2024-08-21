@@ -34,6 +34,16 @@ class Members extends Migration
                 'constraint'    => 255,
                 'null' => true,
             ],
+            'reff_by' => [
+                'type'          => 'INT',
+                'constraint'    => 100,
+                'null' => true,
+            ],
+            'ref_code' => [
+                'type'          => 'VARCHAR',
+                'constraint'    => 255,
+                'null' => true,
+            ],
         ]);
         $this->forge->addKey('id', true);
         $this->forge->createTable('members');

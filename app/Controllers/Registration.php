@@ -20,6 +20,8 @@ class Registration extends BaseController
             $dataPost = [
                 'username' => $username,
                 'chat_id' => $chatID,
+                'reff_by' => '0',
+                'ref_code' => 'eirtj9t'
             ];
             $member->insert($dataPost);
 
