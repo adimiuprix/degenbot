@@ -9,7 +9,7 @@ class Start extends BaseController
 {
     public function start($telegram, $chatID, $username)
     {
-        $key1 = Keyboard::make()
+        $menu = Keyboard::make()
             ->setResizeKeyboard(true)
             ->setOneTimeKeyboard(true)
             ->row([
@@ -29,7 +29,7 @@ class Start extends BaseController
             3️⃣ Please make sure that you have read the Information section.
 
             🗞 Note: You can change your profile details by typing /changeprofile",
-            'reply_markup' => $key1
+            'reply_markup' => $menu
         ]);
 
         return true;
@@ -37,7 +37,7 @@ class Start extends BaseController
 
     public function join($telegram, $chatID)
     {
-        $key2 = Keyboard::make()
+        $menu = Keyboard::make()
             ->setResizeKeyboard(true)
             ->setOneTimeKeyboard(true)
             ->row([
@@ -48,12 +48,12 @@ class Start extends BaseController
             'chat_id' => $chatID,
             'text' => "💻 Please perform the @airdrop tasks to earn up to 300 Yoda.
 
-💠 Solve the portal captcha to join BabyYoda Telegram group.
+💠 Solve the portal captcha to join Our Telegram group.
 
-💠 Follow BabyYoda on Twitter (https://twitter.com/BabyYodaonton) and retweet the pinned post by tagging 3 of your friends.
+💠 Follow Our on Twitter (https://twitter.com/xxxxxx) and retweet the pinned post by tagging 3 of your friends.
 
 💠 Join our promoter channel. (https://t.me/Airdrop) (Optional » 30 Yoda)",
-            'reply_markup' => $key2
+            'reply_markup' => $menu
         ]);
 
         return true;

@@ -7,13 +7,15 @@ use App\Models\Members;
 
 class Home extends BaseController
 {
-    protected $fetchObject;
+    protected $start;
     protected $member;
+    protected $fetchObject;
 
     public function __construct()
     {
         $this->fetchObject = file_get_contents('php://input');
         $this->member = new Members();
+        $this->start = new Start();
     }
 
     public function index(){
@@ -22,8 +24,6 @@ class Home extends BaseController
     }
 
     public function telegram(){
-        $begin = new Start();
-
         $decoded_data = json_decode($this->fetchObject, true);
         $text = $decoded_data['message']['text'];
         $username = $decoded_data['message']['from']['username'];
@@ -32,11 +32,11 @@ class Home extends BaseController
         file_put_contents(WRITEPATH . 'data.json', json_encode(json_decode($this->fetchObject, true), JSON_PRETTY_PRINT));
 
         if($text == '/start'){
-            $begin->start($this->telegram, $chatID, $username);
+            $this->start->start($this->telegram, $chatID, $username);
         }
 
         if($text == 'Join Airdrop'){
-            $begin->join($this->telegram, $chatID);
+            $this->start->join($this->telegram, $chatID);
         }
 
         if($text == 'Registration'){
@@ -48,6 +48,10 @@ class Home extends BaseController
                 'chat_id' => $chatID,
                 'text' => "Masukkan email anda",
             ]);
+        }
+
+        if (filter_var($text, FILTER_VALIDATE_EMAIL)) {
+            $this->is_valid_email($chatID, $text);
         }
 
         if($text == 'Next'){
@@ -179,7 +183,6 @@ class Home extends BaseController
                 'text' => "Email Benar",
                 'reply_markup' => $true_email
             ]);
-
         } else {
             $this->telegram->sendMessage([
                 'chat_id' => $chatID,
