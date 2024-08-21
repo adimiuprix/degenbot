@@ -24,7 +24,7 @@ class Start extends BaseController
 
             1️⃣ First, click the Join Airdrop & Register button to perform the airdrop tasks and submit your information from the Register button.
 
-            2️⃣ You can check your balance and get your referral link by using the My Balance button. 
+            2️⃣ You can check your balance and get your referral link by using the My Balance button.
 
             3️⃣ Please make sure that you have read the Information section.
 
@@ -44,15 +44,18 @@ class Start extends BaseController
                 Keyboard::button('Registration'),
             ]);
 
+        $token = $this->setting()['token'];
+        $reward = $this->setting()['reward'];
+
         $telegram->sendMessage([
             'chat_id' => $chatID,
-            'text' => "💻 Please perform the @airdrop tasks to earn up to 300 Yoda.
+            'text' => "💻 Please perform the @airdrop tasks to earn up to $reward $token.\n"
 
-💠 Solve the portal captcha to join Our Telegram group.
+            . "💠 Solve the portal captcha to join Our Telegram group.\n"
 
-💠 Follow Our on Twitter (https://twitter.com/xxxxxx) and retweet the pinned post by tagging 3 of your friends.
+            . "💠 Follow Our on Twitter (https://twitter.com/xxxxxx) and retweet the pinned post by tagging 3 of your friends.\n"
 
-💠 Join our promoter channel. (https://t.me/Airdrop) (Optional » 30 Yoda)",
+            . "💠 Join our promoter channel. (https://t.me/Airdrop) (Optional » 30 Yoda)\n",
             'reply_markup' => $menu
         ]);
 

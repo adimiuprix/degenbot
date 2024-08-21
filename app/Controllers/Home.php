@@ -22,8 +22,8 @@ class Home extends BaseController
     }
 
     public function index(){
-        $me = $this->telegram->getMe();
-        dd($me);
+        $data = $this->setting()['project_name'];
+        dd($data);
     }
 
     public function telegram(){

@@ -9,6 +9,7 @@ use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
 use Psr\Log\LoggerInterface;
 use Telegram\Bot\Api;
+use App\Models\Settings;
 
 
 /**
@@ -59,5 +60,11 @@ abstract class BaseController extends Controller
         $this->session = \Config\Services::session();
 
         $this->telegram = new Api('7363563786:AAG1ptSZDKH-apTpJKtENDTtK7EL8_kmn_k');
+    }
+
+    public static function setting()
+    {
+        $settingModel = new Settings();
+        return $settingModel->first();
     }
 }
